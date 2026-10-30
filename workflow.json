@@ -1,0 +1,184 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 10,
+        "filters": {
+          "readStatus": "unread"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "fc2421e1-c8a7-42a0-89ee-87fe23d45584",
+      "name": "Get many messages",
+      "webhookId": "7ecf6cff-9669-4d4a-899c-a26d644d5900",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ASwGpQJr0aOLaYTq",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "include": "specifiedFields",
+        "fieldsToInclude": "snippet",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "65bc7410-6f5a-4588-893b-41304c993f54",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "models/gemini-3-flash-preview",
+          "cachedResultName": "Gemini 3 Flash Preview",
+          "cachedResultUrl": ""
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are my email assistant. Summarize the emails below as an HTML email body.\n\nRules:\n- Output only HTML. No markdown, no ** or * symbols, and no code fences.\n- Use inline styles only. Font: Arial, 15px, color #222, line-height 1.5.\n- Start with an <h2> that says \"Your email summary\" in color #1a73e8.\n- Group the emails in order of urgency. Use these headings: \"Urgent\", \"Worth reading\", \"Low priority\".\n- Under each heading, give each email one <li> with the topic in <b> tags, then one short sentence on what it wants from me.\n- Put each heading's list inside a <ul style=\"padding-left:20px\">.\n- Finish with a <div> that has a light yellow background (#fff8e1), padding 12px, a left border of 4px solid #f9a825, and the text \"Actions for today:\" followed by one or two short sentences.\n- Skip any heading that has no emails.\n- Maximum 8 emails in total.\n\nEmails:\n{{ JSON.stringify($json.data) }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        672,
+        0
+      ],
+      "id": "3228493b-618b-4827-807f-75cd886f3885",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "O6gbm72ljbmuN7xj",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "samihadiba18@gmail.com",
+        "subject": "Your daily email summary",
+        "message": "={{ $json.content.parts[0].text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "446f138d-6bc6-4940-8b22-868cfaf9c1f9",
+      "name": "Send a message",
+      "webhookId": "77a1d6ea-5b6e-42c8-a049-72eb7da20e93",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ASwGpQJr0aOLaYTq",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "54abf93c-f5db-44da-b9b7-52452ff4c206",
+      "name": "Schedule Trigger"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get many messages": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get many messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "4eb35653-d2dd-4fd4-b481-83c917a98bfc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "85a9a5e5aebc160446fbe6f098aefb6b805c02b156481ceab989e651e01e9185"
+  },
+  "nodeGroups": [],
+  "id": "MobmAvnFDdcc7Ezd",
+  "tags": []
+}
